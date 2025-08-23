@@ -199,7 +199,7 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("quick-view-title").innerText = product.title;
           document.getElementById("quick-view-price").innerText =
             (product.price / 100).toFixed(2) + " " + Shopify.currency.active;
-          document.getElementById("quick-view-description").innerText = product.description;
+          document.getElementById("quick-view-description").innerHTML = product.description;
           document.getElementById("quick-view-image").src = product.images[0];
 
           const optionsContainer = document.getElementById("quick-view-options");
@@ -213,7 +213,6 @@ document.addEventListener("DOMContentLoaded", function () {
             label.innerText = option.name;
             div.appendChild(label);
 
-            // ✅ If Color → swatches, else dropdown
             if (option.name.toLowerCase().includes("color")) {
               const swatchGroup = document.createElement("div");
               swatchGroup.className = "swatch-group";
@@ -238,27 +237,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 opt.innerText = value;
                 select.appendChild(opt);
               });
-              select.addEventListener("change", () => {
-                updateVariant();
-              });
+              select.addEventListener("change", updateVariant);
               div.appendChild(select);
             }
 
             optionsContainer.appendChild(div);
           });
 
-          updateVariant(); // initialize
+          updateVariant();
           modal.style.display = "flex";
         });
     });
   });
 
-  // ✅ Close modal
   closeBtn.addEventListener("click", () => {
     modal.style.display = "none";
   });
 
-  // ✅ Update variant
+  // ✅ Variant selection logic
   function updateVariant() {
     const selectedOptions = [];
 
@@ -272,16 +268,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    selectedVariant = currentProduct.variants.find(v => {
-      return v.options.every((opt, i) => opt === selectedOptions[i]);
-    });
+    selectedVariant = currentProduct.variants.find(v =>
+      v.options.every((opt, i) => opt === selectedOptions[i])
+    );
 
     if (selectedVariant) {
       addBtn.disabled = false;
       addBtn.dataset.variantId = selectedVariant.id;
       addBtn.dataset.selectedOptions = JSON.stringify(selectedOptions);
 
-      // 🎁 Show bonus message
       if (selectedOptions.includes("Black") && selectedOptions.includes("M")) {
         bonusMessage.style.display = "block";
       } else {
@@ -293,49 +288,43 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // ✅ Add to cart
-  addBtn.addEventListener("click", () => {
+  // ✅ Add to cart (with bonus product if conditions match)
+  addBtn.addEventListener("click", async () => {
     if (!selectedVariant) return;
 
     const selectedOptions = JSON.parse(addBtn.dataset.selectedOptions || "[]");
-
     let itemsToAdd = [
-      {
-        id: selectedVariant.id,
-        quantity: 1
-      }
+      { id: selectedVariant.id, quantity: 1 }
     ];
 
-    // 🎁 Bonus product if Black + M
+    // 🎁 If Black + M, fetch bonus product
     if (selectedOptions.includes("Black") && selectedOptions.includes("M")) {
-      fetch("/products/{{ section.settings.bonus_product_handle }}.js")
-        .then(res => res.json())
-        .then(bonusProduct => {
-          const bonusVariant = bonusProduct.variants[0];
-          itemsToAdd.push({
-            id: bonusVariant.id,
-            quantity: 1
-          });
-          addItemsToCart(itemsToAdd);
-        });
-    } else {
-      addItemsToCart(itemsToAdd);
+      try {
+        const res = await fetch("/products/{{ section.settings.bonus_product_handle }}.js");
+        const bonusProduct = await res.json();
+        if (bonusProduct.variants.length > 0) {
+          itemsToAdd.push({ id: bonusProduct.variants[0].id, quantity: 1 });
+        }
+      } catch (e) {
+        console.error("Bonus product fetch failed", e);
+      }
     }
-  });
 
-  function addItemsToCart(items) {
+    // ✅ Add all items at once
     fetch("/cart/add.js", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items })
+      body: JSON.stringify({ items: itemsToAdd })
     })
-    .then(res => res.json())
+    .then(r => r.json())
     .then(() => {
-      window.location.href = "/cart"; // redirect
-    });
-  }
+      window.location.href = "/cart";
+    })
+    .catch(err => console.error("Add to cart failed", err));
+  });
 });
 </script>
+
 
 {% schema %}
 {
