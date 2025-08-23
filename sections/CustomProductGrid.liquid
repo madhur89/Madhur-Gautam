@@ -7,10 +7,14 @@ Quick View Product Grid with Popup
 {% endcomment %}
 
 <div class="product-grid">
-  {% for product in collections[section.settings.collection].products limit: section.settings.limit %}
+  {% for product in collections.frontpage.products %}
     <div class="product-card">
-      <img src="{{ product.featured_image | img_url: '400x' }}" alt="{{ product.title }}" class="product-img"/>
-      <button class="quick-view-trigger" data-handle="{{ product.handle }}">+</button>
+      <div class="product-image-wrapper">
+        <img src="{{ product.featured_image | img_url: '600x' }}" alt="{{ product.title }}">
+        <button class="quick-view-trigger" data-handle="{{ product.handle }}">+</button>
+      </div>
+      <h3>{{ product.title }}</h3>
+      <p>{{ product.price | money }}</p>
     </div>
   {% endfor %}
 </div>
