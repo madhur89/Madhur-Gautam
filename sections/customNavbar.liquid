@@ -42,13 +42,13 @@
 
 <nav class="custom-navbar">
   <div class="navbar-container">
-    <div class="navbar-logo">
+    <a href="https://madhur-gautam-48-teststore.myshopify.com/"><div class="navbar-logo">
       {% if section.settings.logo != blank %}
         <img src="{{ section.settings.logo | img_url: '200x' }}" alt="Logo">
       {% else %}
         <span class="logo-text">{{ section.settings.logo_text }}</span>
       {% endif %}
-    </div>
+    </div></a>
 
     <div class="navbar-mid">
       <p>{{ section.settings.mid_text }}</p>
