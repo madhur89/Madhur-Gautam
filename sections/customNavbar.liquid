@@ -42,22 +42,31 @@
 
 <nav class="custom-navbar">
   <div class="navbar-container">
-    <a href="https://madhur-gautam-48-teststore.myshopify.com/"><div class="navbar-logo">
+    <!-- Logo -->
+    <a href="/" class="navbar-logo">
       {% if section.settings.logo != blank %}
         <img src="{{ section.settings.logo | img_url: '200x' }}" alt="Logo">
       {% else %}
         <span class="logo-text">{{ section.settings.logo_text }}</span>
       {% endif %}
-    </div></a>
+    </a>
 
-    <div class="navbar-mid">
-      <p>{{ section.settings.mid_text }}</p>
-    </div>
+    <!-- Hamburger (mobile only) -->
+    <button class="hamburger" aria-label="Menu">
+      ☰
+    </button>
 
-    <div class="navbar-btn">
-      <a href="{{ section.settings.button_link }}" class="cta-btn">
-        <span>{{ section.settings.button_label }}</span>
-      </a>
+    <!-- Menu Items -->
+    <div class="navbar-menu">
+      <div class="navbar-mid">
+        <p>{{ section.settings.mid_text }}</p>
+      </div>
+
+      <div class="navbar-btn">
+        <a href="{{ section.settings.button_link }}" class="cta-btn">
+          <span>{{ section.settings.button_label }}</span>
+        </a>
+      </div>
     </div>
   </div>
 </nav>
@@ -87,9 +96,10 @@
   font-weight: bold;
 }
 
-.navbar-mid {
-  flex: 1;
-  text-align: center;
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .navbar-mid p {
@@ -97,11 +107,12 @@
   font-size: 1rem;
 }
 
+/* CTA Button */
 .navbar-btn .cta-btn {
   position: relative;
   display: inline-block;
   padding: 12px 24px;
-   background: linear-gradient(90deg,rgb(255, 230, 0),rgb(255, 243, 9));
+  background: linear-gradient(90deg, rgb(255, 230, 0), rgb(255, 243, 9));
   color: #000;
   font-weight: bold;
   text-decoration: none;
@@ -110,7 +121,6 @@
   transition: color 0.3s ease;
 }
 
-/* Gradient overlay animation */
 .cta-btn::before {
   content: "";
   position: absolute;
@@ -128,7 +138,6 @@
   z-index: 2;
 }
 
-/* On hover, gradient slides in */
 .cta-btn:hover::before {
   left: 0;
 }
@@ -137,12 +146,48 @@
   color: #fff;
 }
 
-/* Responsive */
+/* Hamburger Button (hidden on desktop) */
+.hamburger {
+  display: none;
+  font-size: 1.8rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Responsive: Mobile */
 @media (max-width: 768px) {
   .navbar-container {
+    flex-wrap: nowrap;
+  }
+
+  .navbar-menu {
+    display: none;
     flex-direction: column;
+    width: 100%;
     text-align: center;
-    gap: 12px;
+    padding: 15px 0;
+    background: #f7f7f7;
+    border-top: 1px solid #ddd;
+  }
+
+  .navbar-menu.active {
+    display: flex;
+  }
+
+  .hamburger {
+    display: block;
   }
 }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const hamburger = document.querySelector(".hamburger");
+  const menu = document.querySelector(".navbar-menu");
+
+  hamburger.addEventListener("click", function() {
+    menu.classList.toggle("active");
+  });
+});
+</script>
