@@ -51,23 +51,21 @@
       {% endif %}
     </a>
 
+    <!-- Menu (inline on desktop, dropdown on mobile) -->
+    <div class="navbar-menu">
+      <div class="navbar-mid">
+        <p>{{ section.settings.mid_text }}</p>
+      </div>
+
+      <div class="navbar-btn">
+        <a href="{{ section.settings.button_link }}" class="cta-btn">
+          <span>{{ section.settings.button_label }}</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Hamburger (mobile only) -->
-    <button class="hamburger" aria-label="Menu">
-      ☰
-    </button>
-  </div>
-
-  <!-- Menu Items (dropdown on mobile) -->
-  <div class="navbar-menu">
-    <div class="navbar-mid">
-      <p>{{ section.settings.mid_text }}</p>
-    </div>
-
-    <div class="navbar-btn">
-      <a href="{{ section.settings.button_link }}" class="cta-btn">
-        <span>{{ section.settings.button_label }}</span>
-      </a>
-    </div>
+    <button class="hamburger" aria-label="Menu">☰</button>
   </div>
 </nav>
 
@@ -96,11 +94,13 @@
   font-weight: bold;
 }
 
+/* Navbar Menu (desktop default: inline) */
 .navbar-menu {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   gap: 20px;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
 }
 
 /* CTA Button */
@@ -153,17 +153,24 @@
 
 /* Mobile Styles */
 @media (max-width: 768px) {
+  .navbar-container {
+    justify-content: space-between;
+  }
+
   .navbar-menu {
-    display: none;
     flex-direction: column;
     text-align: center;
-    padding: 15px;
     background: #f7f7f7;
     border-top: 1px solid #ddd;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
   }
 
   .navbar-menu.active {
-    display: flex;
+    max-height: 300px; /* enough space for items */
+    opacity: 1;
+    padding: 15px 0;
   }
 
   .hamburger {
@@ -171,6 +178,21 @@
   }
 }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const hamburger = document.querySelector(".hamburger");
+  const menu = document.querySelector(".navbar-menu");
+
+  hamburger.addEventListener("click", function() {
+    menu.classList.toggle("active");
+
+    // Toggle icon ☰ ↔ ✖
+    hamburger.textContent = menu.classList.contains("active") ? "✖" : "☰";
+  });
+});
+</script>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
