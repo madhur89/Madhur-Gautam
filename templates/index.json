@@ -20,11 +20,11 @@
         "button_link": "#"
       }
     },
-    "custom_annouce_fzjbfq": {
+    "custom_annouce_GzNwft": {
       "type": "CustomAnnouce",
       "name": "Announcement Bar",
       "settings": {
-        "announcement_text": "Free shipping on orders over $50!"
+        "announcement_text": "SUSTAINABLE, ETHICALLY MADE CLOTHES IN SIZES XXS TO 6XL"
       }
     },
     "featured_collection": {
@@ -69,7 +69,7 @@
   },
   "order": [
     "custom_banner_section_yiaXKM",
-    "custom_annouce_fzjbfq",
+    "custom_annouce_GzNwft",
     "featured_collection",
     "custom_product_grid_xTJiTB"
   ]
