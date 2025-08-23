@@ -1,108 +1,206 @@
 {% schema %}
 {
-  "name": "Custom Product Grid",
+  "name": "Product quickview",
   "settings": [
     {
       "type": "collection",
       "id": "collection",
-      "label": "Choose Collection"
+      "label": "Collection"
     },
     {
-      "type": "number",
-      "id": "products_limit",
-      "label": "Number of products to display",
-      "default": 6
+      "type": "product",
+      "id": "bonus_product",
+      "label": "Bonus Product (added automatically with Black + Medium)"
     }
   ],
   "presets": [
     {
-      "name": "Custom Product Grid",
-      "category": "Collection"
+      "name": "Product Grid with Hotspots"
     }
   ]
 }
 {% endschema %}
 
-<section class="custom-product-grid">
-  <div class="grid-container">
-    {% if section.settings.collection != blank %}
-      {% assign collection = collections[section.settings.collection] %}
-      {% for product in collection.products limit: section.settings.products_limit %}
-        <div class="grid-item">
-          <a href="{{ product.url }}" class="product-link">
-            <div class="product-image">
-              {% if product.featured_image %}
-                <img src="{{ product.featured_image | img_url: '600x' }}" alt="{{ product.title }}">
-              {% endif %}
-            </div>
-            <div class="product-info">
-              <h3 class="product-title">{{ product.title }}</h3>
-              <span class="product-price">
-                {{ product.price | money }}
-              </span>
-            </div>
-          </a>
+<div class="product-grid-hotspot">
+  <div class="grid">
+    {% for product in collections[section.settings.collection].products %}
+      <div class="product-item">
+        <div class="image-wrap">
+          <img src="{{ product.featured_image | img_url: '600x' }}" alt="{{ product.title }}">
+          <button class="hotspot" data-product-handle="{{ product.handle }}">+</button>
         </div>
-      {% endfor %}
-    {% else %}
-      <p style="text-align:center;">Please select a collection in section settings.</p>
-    {% endif %}
+        <p class="product-title">{{ product.title }}</p>
+      </div>
+    {% endfor %}
   </div>
-</section>
+</div>
+
+<!-- Quick View Modal -->
+<div id="quick-view-modal" class="quick-view-modal hidden">
+  <div class="modal-content">
+    <button class="close-modal">&times;</button>
+    <div class="modal-body"></div>
+  </div>
+</div>
 
 <style>
-.custom-product-grid {
-  padding: 40px 20px;
-}
-
-.grid-container {
+.product-grid-hotspot .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
-
-.grid-item {
-  background: #fff;
-  border: 1px solid #eee;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.grid-item:hover {
-  transform: translateY(-4px);
-}
-
-.product-link {
-  text-decoration: none;
-  color: inherit;
-  display: block;
-}
-
-.product-image img {
-  width: 100%;
-  display: block;
-}
-
-.product-info {
-  padding: 12px;
-  text-align: center;
-}
-
-.product-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin: 5px 0;
-}
-
-.product-price {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* Responsive */
 @media (max-width: 768px) {
-  .grid-container {
+  .product-grid-hotspot .grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+.product-item {
+  position: relative;
+}
+.image-wrap {
+  position: relative;
+}
+.hotspot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: black;
+  color: white;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+}
+.quick-view-modal {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.quick-view-modal.hidden { display: none; }
+.modal-content {
+  background: white;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+}
+.close-modal {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+.add-to-cart {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: black;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const modal = document.getElementById("quick-view-modal");
+  const modalBody = modal.querySelector(".modal-body");
+  const closeModal = modal.querySelector(".close-modal");
+
+  // Open Quick View
+  document.querySelectorAll(".hotspot").forEach(button => {
+    button.addEventListener("click", function() {
+      let handle = this.dataset.productHandle;
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          let html = `
+            <div>
+              <img src="${product.images[0]}" alt="${product.title}" style="max-width:100%;">
+              <h3>${product.title}</h3>
+              <p>${(product.price / 100).toFixed(2)} ${Shopify.currency.active}</p>
+              <p>${product.description}</p>
+              ${product.options.map(option => `
+                <label>${option.name}</label>
+                <select data-option="${option.name}">
+                  ${option.values.map(val => `<option value="${val}">${val}</option>`).join("")}
+                </select>
+              `).join("")}
+              <button class="add-to-cart" data-product-id="${product.id}">ADD TO CART →</button>
+            </div>
+          `;
+          modalBody.innerHTML = html;
+          modal.classList.remove("hidden");
+
+          // Handle Add to Cart
+          modalBody.querySelector(".add-to-cart").addEventListener("click", function() {
+            let selectedOptions = [];
+            modalBody.querySelectorAll("select").forEach(sel => {
+              selectedOptions.push(sel.value);
+            });
+
+            // Find matching variant
+            let variant = product.variants.find(v => {
+              return v.options.every((opt, idx) => opt === selectedOptions[idx]);
+            });
+
+            if (!variant) {
+              alert("Please select valid options.");
+              return;
+            }
+
+            // Add main product
+            fetch("/cart/add.js", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: variant.id, quantity: 1 })
+            })
+            .then(() => {
+              // BONUS rule: if Black + Medium → also add bonus product
+              if (selectedOptions.includes("Black") && selectedOptions.includes("Medium")) {
+                let bonusHandle = "{{ all_products[section.settings.bonus_product].handle }}";
+                if (bonusHandle) {
+                  return fetch(`/products/${bonusHandle}.js`)
+                    .then(res => res.json())
+                    .then(bonusProduct => {
+                      let bonusVariant = bonusProduct.variants[0].id;
+                      return fetch("/cart/add.js", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: bonusVariant, quantity: 1 })
+                      });
+                    });
+                }
+              }
+            })
+            .then(() => {
+              // Redirect to cart
+              window.location.href = "/cart";
+            });
+          });
+        });
+    });
+  });
+
+  // Close modal
+  closeModal.addEventListener("click", () => modal.classList.add("hidden"));
+  modal.addEventListener("click", e => {
+    if (e.target === modal) modal.classList.add("hidden");
+  });
+});
+</script>
