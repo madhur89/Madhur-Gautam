@@ -55,18 +55,18 @@
     <button class="hamburger" aria-label="Menu">
       ☰
     </button>
+  </div>
 
-    <!-- Menu Items -->
-    <div class="navbar-menu">
-      <div class="navbar-mid">
-        <p>{{ section.settings.mid_text }}</p>
-      </div>
+  <!-- Menu Items (dropdown on mobile) -->
+  <div class="navbar-menu">
+    <div class="navbar-mid">
+      <p>{{ section.settings.mid_text }}</p>
+    </div>
 
-      <div class="navbar-btn">
-        <a href="{{ section.settings.button_link }}" class="cta-btn">
-          <span>{{ section.settings.button_label }}</span>
-        </a>
-      </div>
+    <div class="navbar-btn">
+      <a href="{{ section.settings.button_link }}" class="cta-btn">
+        <span>{{ section.settings.button_label }}</span>
+      </a>
     </div>
   </div>
 </nav>
@@ -76,6 +76,7 @@
   width: 100%;
   background: #f7f7f7;
   padding: 12px 20px;
+  border-bottom: 1px solid #ddd;
 }
 
 .navbar-container {
@@ -84,7 +85,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .navbar-logo img {
@@ -98,13 +98,9 @@
 
 .navbar-menu {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 20px;
-}
-
-.navbar-mid p {
-  margin: 0;
-  font-size: 1rem;
 }
 
 /* CTA Button */
@@ -146,7 +142,7 @@
   color: #fff;
 }
 
-/* Hamburger Button (hidden on desktop) */
+/* Hamburger Button */
 .hamburger {
   display: none;
   font-size: 1.8rem;
@@ -155,18 +151,13 @@
   cursor: pointer;
 }
 
-/* Responsive: Mobile */
+/* Mobile Styles */
 @media (max-width: 768px) {
-  .navbar-container {
-    flex-wrap: nowrap;
-  }
-
   .navbar-menu {
     display: none;
     flex-direction: column;
-    width: 100%;
     text-align: center;
-    padding: 15px 0;
+    padding: 15px;
     background: #f7f7f7;
     border-top: 1px solid #ddd;
   }
@@ -188,6 +179,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
   hamburger.addEventListener("click", function() {
     menu.classList.toggle("active");
+    // Toggle icon ☰ ↔ ✖
+    if (menu.classList.contains("active")) {
+      hamburger.textContent = "✖";
+    } else {
+      hamburger.textContent = "☰";
+    }
   });
 });
 </script>
