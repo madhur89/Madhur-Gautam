@@ -177,7 +177,165 @@ Quick View Product Grid with Popup
 }
 </style>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("quick-view-modal");
+  const closeBtn = modal.querySelector(".quick-view-close");
+  const addBtn = document.getElementById("quick-view-add");
+  const bonusMessage = document.getElementById("bonus-message");
+  let currentProduct = null;
+  let selectedVariant = null;
 
+  // ✅ Trigger Quick View
+  document.querySelectorAll(".quick-view-trigger").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const handle = this.dataset.handle;
+
+      fetch(`/products/${handle}.js`)
+        .then(res => res.json())
+        .then(product => {
+          currentProduct = product;
+
+          document.getElementById("quick-view-title").innerText = product.title;
+          document.getElementById("quick-view-price").innerText =
+            (product.price / 100).toFixed(2) + " " + Shopify.currency.active;
+          document.getElementById("quick-view-description").innerText = product.description;
+          document.getElementById("quick-view-image").src = product.images[0];
+
+          const optionsContainer = document.getElementById("quick-view-options");
+          optionsContainer.innerHTML = "";
+
+          product.options.forEach((option, index) => {
+            const div = document.createElement("div");
+            div.className = "quick-view-option";
+
+            const label = document.createElement("label");
+            label.innerText = option.name;
+            div.appendChild(label);
+
+            // ✅ If Color → swatches, else dropdown
+            if (option.name.toLowerCase().includes("color")) {
+              const swatchGroup = document.createElement("div");
+              swatchGroup.className = "swatch-group";
+              option.values.forEach(value => {
+                const swatch = document.createElement("div");
+                swatch.className = "swatch";
+                swatch.innerText = value;
+                swatch.addEventListener("click", () => {
+                  swatchGroup.querySelectorAll(".swatch").forEach(s => s.classList.remove("active"));
+                  swatch.classList.add("active");
+                  swatchGroup.dataset.value = value;
+                  updateVariant();
+                });
+                swatchGroup.appendChild(swatch);
+              });
+              div.appendChild(swatchGroup);
+            } else {
+              const select = document.createElement("select");
+              option.values.forEach(value => {
+                const opt = document.createElement("option");
+                opt.value = value;
+                opt.innerText = value;
+                select.appendChild(opt);
+              });
+              select.addEventListener("change", () => {
+                updateVariant();
+              });
+              div.appendChild(select);
+            }
+
+            optionsContainer.appendChild(div);
+          });
+
+          updateVariant(); // initialize
+          modal.style.display = "flex";
+        });
+    });
+  });
+
+  // ✅ Close modal
+  closeBtn.addEventListener("click", () => {
+    modal.style.display = "none";
+  });
+
+  // ✅ Update variant
+  function updateVariant() {
+    const selectedOptions = [];
+
+    document.querySelectorAll(".quick-view-option").forEach(div => {
+      const swatchGroup = div.querySelector(".swatch-group");
+      if (swatchGroup) {
+        selectedOptions.push(swatchGroup.dataset.value || "");
+      } else {
+        const select = div.querySelector("select");
+        selectedOptions.push(select.value);
+      }
+    });
+
+    selectedVariant = currentProduct.variants.find(v => {
+      return v.options.every((opt, i) => opt === selectedOptions[i]);
+    });
+
+    if (selectedVariant) {
+      addBtn.disabled = false;
+      addBtn.dataset.variantId = selectedVariant.id;
+      addBtn.dataset.selectedOptions = JSON.stringify(selectedOptions);
+
+      // 🎁 Show bonus message
+      if (selectedOptions.includes("Black") && selectedOptions.includes("M")) {
+        bonusMessage.style.display = "block";
+      } else {
+        bonusMessage.style.display = "none";
+      }
+    } else {
+      addBtn.disabled = true;
+      bonusMessage.style.display = "none";
+    }
+  }
+
+  // ✅ Add to cart
+  addBtn.addEventListener("click", () => {
+    if (!selectedVariant) return;
+
+    const selectedOptions = JSON.parse(addBtn.dataset.selectedOptions || "[]");
+
+    let itemsToAdd = [
+      {
+        id: selectedVariant.id,
+        quantity: 1
+      }
+    ];
+
+    // 🎁 Bonus product if Black + M
+    if (selectedOptions.includes("Black") && selectedOptions.includes("M")) {
+      fetch("/products/{{ section.settings.bonus_product_handle }}.js")
+        .then(res => res.json())
+        .then(bonusProduct => {
+          const bonusVariant = bonusProduct.variants[0];
+          itemsToAdd.push({
+            id: bonusVariant.id,
+            quantity: 1
+          });
+          addItemsToCart(itemsToAdd);
+        });
+    } else {
+      addItemsToCart(itemsToAdd);
+    }
+  });
+
+  function addItemsToCart(items) {
+    fetch("/cart/add.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items })
+    })
+    .then(res => res.json())
+    .then(() => {
+      window.location.href = "/cart"; // redirect
+    });
+  }
+});
+</script>
 
 {% schema %}
 {
