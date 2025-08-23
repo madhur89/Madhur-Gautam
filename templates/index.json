@@ -20,6 +20,13 @@
         "button_link": "#"
       }
     },
+    "custom_annouce_fzjbfq": {
+      "type": "CustomAnnouce",
+      "name": "Announcement Bar",
+      "settings": {
+        "announcement_text": "Free shipping on orders over $50!"
+      }
+    },
     "featured_collection": {
       "type": "featured-collection",
       "disabled": true,
@@ -54,12 +61,15 @@
       "name": "Custom Product Grid",
       "settings": {
         "collection": "product-grid-collection",
-        "bonus_product": "dark-winter-jacket"
+        "limit": 6,
+        "bonus_product_handle": "soft-winter-jacket",
+        "bonus_product_title": "Soft Winter Jacket"
       }
     }
   },
   "order": [
     "custom_banner_section_yiaXKM",
+    "custom_annouce_fzjbfq",
     "featured_collection",
     "custom_product_grid_xTJiTB"
   ]
