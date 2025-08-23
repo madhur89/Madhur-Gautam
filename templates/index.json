@@ -54,7 +54,7 @@
       "name": "Custom Product Grid",
       "settings": {
         "collection": "product-grid-collection",
-        "products_limit": 6
+        "bonus_product": "dark-winter-jacket"
       }
     }
   },
