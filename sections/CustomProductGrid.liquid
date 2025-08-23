@@ -1,0 +1,108 @@
+{% schema %}
+{
+  "name": "Custom Product Grid",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Choose Collection"
+    },
+    {
+      "type": "number",
+      "id": "products_limit",
+      "label": "Number of products to display",
+      "default": 6
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Product Grid",
+      "category": "Collection"
+    }
+  ]
+}
+{% endschema %}
+
+<section class="custom-product-grid">
+  <div class="grid-container">
+    {% if section.settings.collection != blank %}
+      {% assign collection = collections[section.settings.collection] %}
+      {% for product in collection.products limit: section.settings.products_limit %}
+        <div class="grid-item">
+          <a href="{{ product.url }}" class="product-link">
+            <div class="product-image">
+              {% if product.featured_image %}
+                <img src="{{ product.featured_image | img_url: '600x' }}" alt="{{ product.title }}">
+              {% endif %}
+            </div>
+            <div class="product-info">
+              <h3 class="product-title">{{ product.title }}</h3>
+              <span class="product-price">
+                {{ product.price | money }}
+              </span>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="text-align:center;">Please select a collection in section settings.</p>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+.custom-product-grid {
+  padding: 40px 20px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.grid-item {
+  background: #fff;
+  border: 1px solid #eee;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.grid-item:hover {
+  transform: translateY(-4px);
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.product-image img {
+  width: 100%;
+  display: block;
+}
+
+.product-info {
+  padding: 12px;
+  text-align: center;
+}
+
+.product-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 5px 0;
+}
+
+.product-price {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
