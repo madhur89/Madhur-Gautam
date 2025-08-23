@@ -9,17 +9,6 @@
  */
 {
   "sections": {
-    "custom_navbar_yr9iNb": {
-      "type": "customNavbar",
-      "name": "Custom Navbar",
-      "settings": {
-        "logo": "shopify://shop_images/Group_1000007858.png",
-        "logo_text": "TISSO VISON",
-        "mid_text": "Find the ideal gift for your loved ones.",
-        "button_label": "CHOOSE GIFT →",
-        "button_link": ""
-      }
-    },
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
@@ -50,7 +39,6 @@
     }
   },
   "order": [
-    "custom_navbar_yr9iNb",
     "featured_collection"
   ]
 }

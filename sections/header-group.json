@@ -55,10 +55,22 @@
         "padding_top": 20,
         "padding_bottom": 20
       }
+    },
+    "custom_navbar_xqnRUp": {
+      "type": "customNavbar",
+      "name": "Custom Navbar",
+      "settings": {
+        "logo": "shopify://shop_images/Group_1000007858.png",
+        "logo_text": "TISSO VISON",
+        "mid_text": "Find the ideal gift for your loved ones.",
+        "button_label": "CHOOSE GIFT →",
+        "button_link": ""
+      }
     }
   },
   "order": [
     "announcement-bar",
-    "header"
+    "header",
+    "custom_navbar_xqnRUp"
   ]
 }
