@@ -59,7 +59,8 @@
     "custom_navbar_xqnRUp": {
       "type": "customNavbar",
       "custom_css": [
-        ".navbar-mid p {margin: 0; font-size: 1.5rem; color: black;}"
+        ".navbar-mid p {margin: 0; font-size: 1.5rem; color: black;}",
+        "@media only screen and (min-width:768px){.navbar-menu {display: flex; align-items: center; gap: 340px;}}"
       ],
       "name": "Custom Navbar",
       "settings": {
