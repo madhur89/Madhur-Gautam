@@ -58,6 +58,9 @@
     },
     "custom_navbar_xqnRUp": {
       "type": "customNavbar",
+      "custom_css": [
+        ".navbar-mid p {margin: 0; font-size: 1.5rem; color: black;}"
+      ],
       "name": "Custom Navbar",
       "settings": {
         "logo": "shopify://shop_images/Group_1000007858.png",
