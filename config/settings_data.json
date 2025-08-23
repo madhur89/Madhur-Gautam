@@ -390,5 +390,10 @@
         }
       }
     }
+  },
+  "platform_customizations": {
+    "custom_css": [
+      "p#quick-view-price {font-weight: normal; font-size: 1.5em;}"
+    ]
   }
 }
