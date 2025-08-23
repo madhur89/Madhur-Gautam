@@ -1,206 +1,379 @@
 {% schema %}
 {
-  "name": "Product quickview",
+  "name": "Product quickView",
   "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section heading",
+      "default": "Shop The Collection"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "label": "Products to show",
+      "min": 2,
+      "max": 24,
+      "default": 6,
+      "step": 1
+    },
     {
       "type": "collection",
       "id": "collection",
       "label": "Collection"
-    },
-    {
-      "type": "product",
-      "id": "bonus_product",
-      "label": "Bonus Product (added automatically with Black + Medium)"
     }
   ],
   "presets": [
     {
-      "name": "Product Grid with Hotspots"
+      "name": "Product Grid with Quick View",
+      "category": "Products"
     }
   ]
 }
+
 {% endschema %}
 
-<div class="product-grid-hotspot">
-  <div class="grid">
-    {% for product in collections[section.settings.collection].products %}
-      <div class="product-item">
-        <div class="image-wrap">
-          <img src="{{ product.featured_image | img_url: '600x' }}" alt="{{ product.title }}">
-          <button class="hotspot" data-product-handle="{{ product.handle }}">+</button>
-        </div>
-        <p class="product-title">{{ product.title }}</p>
-      </div>
-    {% endfor %}
+{% assign coll = collections[section.settings.collection] %}
+
+<section class="pgqv">
+  <div class="pgqv-grid">
+    {% if coll %}
+      {% for product in coll.products limit: section.settings.limit %}
+        <article class="pgqv-card">
+          <div class="pgqv-imgwrap">
+            {% if product.featured_image %}
+              <img class="pgqv-img" src="{{ product.featured_image | img_url: '700x' }}" alt="{{ product.title | escape }}">
+            {% endif %}
+            <button class="pgqv-hotspot" aria-label="Quick view {{ product.title | escape }}" data-handle="{{ product.handle }}">+</button>
+          </div>
+          <div class="pgqv-meta">
+            <h3 class="pgqv-title">{{ product.title }}</h3>
+            <div class="pgqv-price">{{ product.price | money }}</div>
+          </div>
+        </article>
+      {% endfor %}
+    {% else %}
+      <p style="text-align:center">Choose a collection in this section’s settings.</p>
+    {% endif %}
   </div>
-</div>
+</section>
 
 <!-- Quick View Modal -->
-<div id="quick-view-modal" class="quick-view-modal hidden">
-  <div class="modal-content">
-    <button class="close-modal">&times;</button>
-    <div class="modal-body"></div>
+<div class="pgqv-modal" id="pgqv-modal" role="dialog" aria-modal="true" aria-labelledby="pgqv-title" hidden>
+  <div class="pgqv-dialog">
+    <button class="pgqv-close" aria-label="Close">×</button>
+
+    <div class="pgqv-content">
+      <div class="pgqv-media">
+        <img id="pgqv-media-img" alt="">
+      </div>
+
+      <div class="pgqv-details">
+        <h3 class="pgqv-h" id="pgqv-title"></h3>
+        <div class="pgqv-p" id="pgqv-price"></div>
+        <div class="pgqv-desc" id="pgqv-desc"></div>
+
+        <div id="pgqv-options"></div>
+
+        <button class="pgqv-add" id="pgqv-add">
+          ADD TO CART
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
 <style>
-.product-grid-hotspot .grid {
+/* ---------- GRID ---------- */
+.pgqv { padding: 32px 20px; }
+.pgqv-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 18px;
 }
-@media (max-width: 768px) {
-  .product-grid-hotspot .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+@media (max-width: 768px){
+  .pgqv-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
-.product-item {
-  position: relative;
+.pgqv-card { background:#fff; border:1px solid #eee; }
+.pgqv-imgwrap { position:relative; overflow:hidden; }
+.pgqv-img { width:100%; display:block; }
+.pgqv-hotspot{
+  position:absolute; right:10px; top:10px;
+  width:32px; height:32px; border-radius:50%;
+  background:#000; color:#fff; border:0; cursor:pointer; font-size:18px; line-height:32px;
+  display:flex; align-items:center; justify-content:center;
 }
-.image-wrap {
-  position: relative;
+.pgqv-meta{ padding:10px; text-align:center; }
+.pgqv-title{ font-size:14px; margin:4px 0 2px; }
+.pgqv-price{ color:#555; font-size:13px; }
+
+/* ---------- MODAL SHELL ---------- */
+.pgqv-modal[hidden]{ display:none; }
+.pgqv-modal{
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  display:grid; place-items:center; z-index:10000;
 }
-.hotspot {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: black;
-  color: white;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
+.pgqv-dialog{
+  background:#fff; width:min(640px,92vw); border-radius:6px; position:relative;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
-.quick-view-modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+.pgqv-close{
+  position:absolute; right:12px; top:8px; border:0; background:transparent;
+  font-size:24px; cursor:pointer; line-height:1;
 }
-.quick-view-modal.hidden { display: none; }
-.modal-content {
-  background: white;
-  padding: 20px;
-  max-width: 400px;
-  width: 100%;
-  position: relative;
+
+/* ---------- MODAL CONTENT LAYOUT ---------- */
+.pgqv-content{
+  display:grid; grid-template-columns:140px 1fr; gap:16px;
+  padding:18px;
 }
-.close-modal {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  background: transparent;
-  border: none;
-  font-size: 22px;
-  cursor: pointer;
+@media (max-width: 520px){
+  .pgqv-content{ grid-template-columns:1fr; }
 }
-.add-to-cart {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  background: black;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
+.pgqv-media img{
+  width:140px; height:auto; display:block; border:1px solid #eee;
 }
+@media (max-width:520px){ .pgqv-media img{ width:100%; } }
+
+.pgqv-h{ margin:0 0 6px; font-size:20px; font-weight:600; }
+.pgqv-p{ font-weight:600; margin-bottom:10px; }
+.pgqv-desc{ color:#4b4b4b; font-size:14px; line-height:1.45; margin-bottom:14px; }
+
+/* ---------- COLOR SWATCH SEGMENTED (like screenshot) ---------- */
+.pgqv-field{ margin:10px 0 12px; }
+.pgqv-label{ font-size:13px; letter-spacing:.02em; margin-bottom:6px; }
+.pgqv-seg{
+  display:flex; border:1px solid #1a1a1a; border-radius:2px; overflow:hidden;
+}
+.pgqv-seg-btn{
+  position:relative; flex:1; padding:12px 14px; font-size:16px;
+  background:#fff; border:0; cursor:pointer; text-align:left;
+}
+.pgqv-seg-btn + .pgqv-seg-btn{ border-left:3px solid #000; } /* thick divider like screenshot */
+.pgqv-seg-btn.is-active::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:6px; background:#1e40af; /* deep indigo bar */
+}
+
+/* ---------- SIZE SELECT (two-cell look) ---------- */
+.pgqv-select{
+  display:grid; grid-template-columns:1fr 44px; align-items:center;
+  border:1px solid #1a1a1a; border-radius:2px; overflow:hidden;
+}
+.pgqv-select select{
+  appearance:none; -webkit-appearance:none; -moz-appearance:none;
+  border:0; background:#fff; padding:12px 14px; font-size:16px; width:100%;
+}
+.pgqv-select .pgqv-caret{
+  display:grid; place-items:center; border-left:1px solid #d1d1d1; height:100%;
+}
+.pgqv-caret::after{ content:"▾"; font-size:16px; }
+
+/* ---------- ADD BUTTON ---------- */
+.pgqv-add{
+  position:relative; width:100%; padding:14px 56px 14px 18px;
+  background:#000; color:#fff; border:0; cursor:pointer; font-weight:600;
+  text-transform:uppercase; letter-spacing:.02em; border-radius:2px;
+}
+.pgqv-add::after{
+  /* arrow on right */
+  content:"→"; position:absolute; right:18px; top:50%; transform:translateY(-50%); font-size:20px;
+}
+.pgqv-add::before{
+  /* white line before arrow */
+  content:""; position:absolute; right:48px; top:50%; transform:translateY(-50%);
+  width:28px; height:2px; background:#fff;
+}
+.pgqv-add[disabled]{ opacity:.5; cursor:not-allowed; }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  const modal = document.getElementById("quick-view-modal");
-  const modalBody = modal.querySelector(".modal-body");
-  const closeModal = modal.querySelector(".close-modal");
+window.moneyFormat = {{ shop.money_format | json }};
 
-  // Open Quick View
-  document.querySelectorAll(".hotspot").forEach(button => {
-    button.addEventListener("click", function() {
-      let handle = this.dataset.productHandle;
-      fetch(`/products/${handle}.js`)
-        .then(res => res.json())
-        .then(product => {
-          let html = `
-            <div>
-              <img src="${product.images[0]}" alt="${product.title}" style="max-width:100%;">
-              <h3>${product.title}</h3>
-              <p>${(product.price / 100).toFixed(2)} ${Shopify.currency.active}</p>
-              <p>${product.description}</p>
-              ${product.options.map(option => `
-                <label>${option.name}</label>
-                <select data-option="${option.name}">
-                  ${option.values.map(val => `<option value="${val}">${val}</option>`).join("")}
-                </select>
-              `).join("")}
-              <button class="add-to-cart" data-product-id="${product.id}">ADD TO CART →</button>
-            </div>
-          `;
-          modalBody.innerHTML = html;
-          modal.classList.remove("hidden");
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('pgqv-modal');
+  const imgEl  = document.getElementById('pgqv-media-img');
+  const titleEl= document.getElementById('pgqv-title');
+  const priceEl= document.getElementById('pgqv-price');
+  const descEl = document.getElementById('pgqv-desc');
+  const optsEl = document.getElementById('pgqv-options');
+  const addBtn = document.getElementById('pgqv-add');
+  const closeBtn = document.querySelector('.pgqv-close');
 
-          // Handle Add to Cart
-          modalBody.querySelector(".add-to-cart").addEventListener("click", function() {
-            let selectedOptions = [];
-            modalBody.querySelectorAll("select").forEach(sel => {
-              selectedOptions.push(sel.value);
-            });
+  let currentProduct = null;
+  let selected = {};  // { Color: 'Blue', Size: 'M', ... }
+  let selectedVariant = null;
 
-            // Find matching variant
-            let variant = product.variants.find(v => {
-              return v.options.every((opt, idx) => opt === selectedOptions[idx]);
-            });
+  function formatMoney(cents){
+    if (window.Shopify && Shopify.formatMoney) return Shopify.formatMoney(cents, window.moneyFormat);
+    return (cents/100).toFixed(2);
+  }
 
-            if (!variant) {
-              alert("Please select valid options.");
-              return;
-            }
+  function uniqueByIndex(variants, idx){
+    const out = [];
+    variants.forEach(v => { const val = v.options[idx]; if (out.indexOf(val) === -1) out.push(val); });
+    return out;
+  }
 
-            // Add main product
-            fetch("/cart/add.js", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ id: variant.id, quantity: 1 })
-            })
-            .then(() => {
-              // BONUS rule: if Black + Medium → also add bonus product
-              if (selectedOptions.includes("Black") && selectedOptions.includes("Medium")) {
-                let bonusHandle = "{{ all_products[section.settings.bonus_product].handle }}";
-                if (bonusHandle) {
-                  return fetch(`/products/${bonusHandle}.js`)
-                    .then(res => res.json())
-                    .then(bonusProduct => {
-                      let bonusVariant = bonusProduct.variants[0].id;
-                      return fetch("/cart/add.js", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id: bonusVariant, quantity: 1 })
-                      });
-                    });
-                }
-              }
-            })
-            .then(() => {
-              // Redirect to cart
-              window.location.href = "/cart";
-            });
+  function findMatchingVariant(product, sel){
+    return product.variants.find(v => {
+      return v.options.every((opt, i) => {
+        const name = product.options[i]; // option name at index
+        return !sel[name] || sel[name] === opt;
+      });
+    }) || null;
+  }
+
+  function renderOptions(product){
+    optsEl.innerHTML = '';
+    selected = {};
+    selectedVariant = null;
+
+    // Build values per option index
+    const optionValues = product.options.map((_, idx) => uniqueByIndex(product.variants, idx));
+
+    product.options.forEach((name, idx) => {
+      const values = optionValues[idx];
+
+      // Color -> segmented swatches like screenshot
+      if (/color/i.test(name)) {
+        const wrap = document.createElement('div');
+        wrap.className = 'pgqv-field';
+        wrap.innerHTML = `<div class="pgqv-label">Color</div>`;
+        const seg = document.createElement('div');
+        seg.className = 'pgqv-seg';
+        values.forEach((val, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'pgqv-seg-btn' + (i===0 ? ' is-active' : '');
+          btn.textContent = val;
+          btn.dataset.optionName = name;
+          btn.dataset.value = val;
+          if (i===0){ selected[name] = val; }
+          btn.addEventListener('click', e => {
+            Array.from(seg.children).forEach(c => c.classList.remove('is-active'));
+            btn.classList.add('is-active');
+            selected[name] = val;
+            selectedVariant = findMatchingVariant(product, selected);
+            toggleAddState(product);
           });
+          seg.appendChild(btn);
         });
+        wrap.appendChild(seg);
+        optsEl.appendChild(wrap);
+      } else {
+        // Other options -> stylized select (Size etc.)
+        const wrap = document.createElement('div');
+        wrap.className = 'pgqv-field';
+        const label = document.createElement('div');
+        label.className = 'pgqv-label';
+        label.textContent = name;
+        wrap.appendChild(label);
+
+        const selWrap = document.createElement('div');
+        selWrap.className = 'pgqv-select';
+        const select = document.createElement('select');
+        const ph = document.createElement('option');
+        ph.value = '';
+        ph.textContent = name.toLowerCase() === 'size' ? 'Choose your size' : 'Choose an option';
+        ph.disabled = true; ph.selected = true;
+        select.appendChild(ph);
+        values.forEach(val => {
+          const opt = document.createElement('option');
+          opt.value = val; opt.textContent = val;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', () => {
+          if (select.value) selected[name] = select.value;
+          selectedVariant = findMatchingVariant(product, selected);
+          toggleAddState(product);
+        });
+        const caret = document.createElement('div'); caret.className = 'pgqv-caret';
+        selWrap.appendChild(select); selWrap.appendChild(caret);
+        wrap.appendChild(selWrap);
+        optsEl.appendChild(wrap);
+      }
+    });
+
+    // initialize selectedVariant using defaults (first color selected, size empty)
+    selectedVariant = findMatchingVariant(product, selected);
+    toggleAddState(product);
+  }
+
+  function toggleAddState(product){
+    const ok = selectedVariant && !selectedVariant.available === false ? true : !!selectedVariant;
+    addBtn.disabled = !ok;
+  }
+
+  function openModal(product){
+    currentProduct = product;
+    imgEl.src = product.images && product.images.length ? product.images[0] : '';
+    imgEl.alt = product.title;
+    titleEl.textContent = product.title;
+    priceEl.textContent = formatMoney(product.price);
+    // Keep description shortish for the modal (strip most HTML)
+    descEl.innerHTML = product.description ? product.description : '';
+    renderOptions(product);
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(){
+    modal.hidden = true;
+    document.body.style.overflow = '';
+  }
+
+  // Open quick view
+  document.querySelectorAll('.pgqv-hotspot').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const handle = btn.dataset.handle;
+      fetch(`/products/${handle}.js`)
+        .then(r => r.json())
+        .then(openModal);
     });
   });
 
-  // Close modal
-  closeModal.addEventListener("click", () => modal.classList.add("hidden"));
-  modal.addEventListener("click", e => {
-    if (e.target === modal) modal.classList.add("hidden");
+  // Close
+  document.addEventListener('click', e => {
+    if (e.target === modal) closeModal();
+  });
+  document.querySelector('.pgqv-close').addEventListener('click', closeModal);
+
+  // Add to cart with bonus rule + redirect
+  addBtn.addEventListener('click', () => {
+    if (!currentProduct) return;
+
+    // If no explicit selection produced a variant yet, try first available
+    if (!selectedVariant) {
+      selectedVariant = currentProduct.variants[0];
+    }
+
+    const mainAdd = fetch('/cart/add.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selectedVariant.id, quantity: 1 })
+    });
+
+    // Condition: includes Black and Medium (case-insensitive)
+    const pickedVals = Object.values(selected).map(v => (v || '').toString().toLowerCase());
+    const needBonus = pickedVals.includes('black') && pickedVals.includes('medium');
+
+    let bonusAdd = Promise.resolve();
+    {% if section.settings.bonus_product %}
+      const bonusHandle = {{ all_products[section.settings.bonus_product].handle | json }};
+      if (needBonus && bonusHandle){
+        bonusAdd = fetch(`/products/${bonusHandle}.js`)
+          .then(r => r.json())
+          .then(bp => fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: bp.variants[0].id, quantity: 1 })
+          }));
+      }
+    {% endif %}
+
+    Promise.all([mainAdd, bonusAdd]).then(() => {
+      window.location.href = '/cart';
+    });
   });
 });
 </script>
