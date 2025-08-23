@@ -53,7 +53,7 @@
       "type": "CustomProductGrid",
       "name": "Custom Product Grid",
       "settings": {
-        "collection": "frontpage",
+        "collection": "product-grid-collection",
         "products_limit": 6
       }
     }
