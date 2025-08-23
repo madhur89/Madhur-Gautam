@@ -51,23 +51,21 @@
       {% endif %}
     </a>
 
+    <!-- Middle text + Button -->
+    <div class="navbar-menu">
+      <div class="navbar-mid">
+        <p>{{ section.settings.mid_text }}</p>
+      </div>
+
+      <div class="navbar-btn">
+        <a href="{{ section.settings.button_link }}" class="cta-btn">
+          <span>{{ section.settings.button_label }}</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Hamburger (mobile only) -->
-    <button class="hamburger" aria-label="Menu">
-      ☰
-    </button>
-  </div>
-
-  <!-- Menu Items (dropdown on mobile) -->
-  <div class="navbar-menu">
-    <div class="navbar-mid">
-      <p>{{ section.settings.mid_text }}</p>
-    </div>
-
-    <div class="navbar-btn">
-      <a href="{{ section.settings.button_link }}" class="cta-btn">
-        <span>{{ section.settings.button_label }}</span>
-      </a>
-    </div>
+    <button class="hamburger" aria-label="Menu">☰</button>
   </div>
 </nav>
 
@@ -85,6 +83,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .navbar-logo img {
@@ -98,7 +97,6 @@
 
 .navbar-menu {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 20px;
 }
@@ -153,6 +151,10 @@
 
 /* Mobile Styles */
 @media (max-width: 768px) {
+  .navbar-container {
+    flex-wrap: wrap;
+  }
+
   .navbar-menu {
     display: none;
     flex-direction: column;
@@ -160,6 +162,7 @@
     padding: 15px;
     background: #f7f7f7;
     border-top: 1px solid #ddd;
+    width: 100%;
   }
 
   .navbar-menu.active {
@@ -168,6 +171,7 @@
 
   .hamburger {
     display: block;
+    margin-left: auto;
   }
 }
 </style>
@@ -180,11 +184,7 @@ document.addEventListener("DOMContentLoaded", function() {
   hamburger.addEventListener("click", function() {
     menu.classList.toggle("active");
     // Toggle icon ☰ ↔ ✖
-    if (menu.classList.contains("active")) {
-      hamburger.textContent = "✖";
-    } else {
-      hamburger.textContent = "☰";
-    }
+    hamburger.textContent = menu.classList.contains("active") ? "✖" : "☰";
   });
 });
 </script>
