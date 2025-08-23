@@ -263,7 +263,7 @@ document.addEventListener("DOMContentLoaded", function () {
           document.getElementById("quick-view-title").innerText = product.title;
           document.getElementById("quick-view-price").innerText =
             (product.price / 100).toFixed(2) + " " + Shopify.currency.active;
-          document.getElementById("quick-view-description").innerText = product.description;
+          document.getElementById("quick-view-description").innerHTML = product.description;
           document.getElementById("quick-view-image").src = product.images[0];
 
           const optionsContainer = document.getElementById("quick-view-options");
