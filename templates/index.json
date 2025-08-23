@@ -48,10 +48,19 @@
         "padding_top": 44,
         "padding_bottom": 36
       }
+    },
+    "custom_product_grid_xTJiTB": {
+      "type": "CustomProductGrid",
+      "name": "Custom Product Grid",
+      "settings": {
+        "collection": "frontpage",
+        "products_limit": 6
+      }
     }
   },
   "order": [
     "custom_banner_section_yiaXKM",
-    "featured_collection"
+    "featured_collection",
+    "custom_product_grid_xTJiTB"
   ]
 }
